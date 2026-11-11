@@ -20,6 +20,7 @@ field names; see https://api.team-manager.us.d4h.com/v3/docs for each one.
 Not every collection supports every method: D4H answers an unsupported one
 with an error status, which is raised as requests.HTTPError.
 """
+import os
 
 
 class Resource:
@@ -79,6 +80,22 @@ class Resource:
         path = self._item(item_id) if item_id is not None else self.path
         return self._client.request(method, self._client._team_endpoint(f"{path}/{action}"),
                                     params=params, data=data)
+
+
+class Documents(Resource):
+    """The documents collection, with a helper to upload a file from disk."""
+
+    def upload(self, file_path, data=None):
+        """Upload a file as a new document.
+
+        `data` holds the form fields, e.g. {'targetResourceType': 'Member',
+        'targetResourceId': 17, 'title': 'First Aid card'}.
+        """
+        # Read the bytes up front rather than passing the open file, so a retry
+        # resends the whole document instead of an exhausted file handle.
+        with open(file_path, 'rb') as file:
+            content = file.read()
+        return self.create(data or {}, files={'file': (os.path.basename(file_path), content)})
 
 
 class Endpoint:
@@ -189,8 +206,14 @@ MAX_PAGE_SIZES = {
     'search': 100,
 }
 
+# Collections with extra helpers beyond the generic Resource methods.
+RESOURCE_CLASSES = {
+    'documents': Documents,
+}
+
 for _name, _path in COLLECTIONS.items():
-    setattr(CollectionsMixin, _name, collection(_path, max_page_size=MAX_PAGE_SIZES.get(_path)))
+    setattr(CollectionsMixin, _name, collection(_path, RESOURCE_CLASSES.get(_path, Resource),
+                                                 max_page_size=MAX_PAGE_SIZES.get(_path)))
 for _name, _path in ENDPOINTS.items():
     setattr(CollectionsMixin, _name, collection(_path, Endpoint))
 del _name, _path

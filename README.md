@@ -12,9 +12,9 @@ depends only on `requests`.
 ## Install
 
 ```sh
-uv add "d4h-client @ git+https://github.com/North-Shore-Rescue/d4h-client@v0.1.0"
+uv add "d4h-client @ git+https://github.com/North-Shore-Rescue/d4h-client@v0.2.0"
 # or
-pip install "git+https://github.com/North-Shore-Rescue/d4h-client@v0.1.0"
+pip install "git+https://github.com/North-Shore-Rescue/d4h-client@v0.2.0"
 ```
 
 ## Usage
@@ -28,14 +28,21 @@ client = D4hClient(
     base_url="https://api.team-manager.ca.d4h.com/v3/",  # use your region's host
 )
 
-members = client.get_members()
-attendance = client.get_attendance(status="ATTENDING", starts_after="2026-01-01T00:00:00Z")
+members = client.members.list()
+attendance = client.attendance.list(status="ATTENDING", starts_after="2026-01-01T00:00:00Z")
 
-exercise = client.create_exercise(
-    "Rope rescue practice", "2026-01-06T02:00:00Z", "2026-01-06T05:00:00Z",
-    full_team=False,  # otherwise D4H enrols the whole team as attendance
-)
+exercise = client.exercises.create({
+    "referenceDescription": "Rope rescue practice",
+    "startsAt": "2026-01-06T02:00:00Z",
+    "endsAt": "2026-01-06T05:00:00Z",
+    "fullTeam": False,  # otherwise D4H enrols the whole team as attendance
+})
+client.attendance.create({"memberId": 17, "activityId": exercise["id"], "status": "ATTENDING",
+                          "startsAt": "2026-01-06T02:00:00Z", "endsAt": "2026-01-06T05:00:00Z"})
 ```
+
+Filters and request bodies use the API's own names, exactly as listed in the
+[API docs](https://api.team-manager.us.d4h.com/v3/docs); the client passes them through unchanged.
 
 ## Every endpoint
 
@@ -49,10 +56,9 @@ client.tasks.create({"title": "Check radios"})      # POST
 client.tasks.update(5, {"title": "Check all radios"})  # PATCH
 client.whiteboard.delete(9)                          # DELETE
 client.documents.replace(9, {"title": "v2"}, files={"file": open("card.pdf", "rb")})  # PUT
-```
 
-Request bodies use the API's own field names, as listed in the
-[API docs](https://api.team-manager.us.d4h.com/v3/docs).
+client.documents.upload("card.pdf", {"targetResourceType": "Member", "targetResourceId": 17})
+```
 
 Calls under a collection or a record use `action` (file downloads return bytes) and
 `list_related` (every page):
@@ -104,17 +110,29 @@ tests then fail until the client covers them.
 
 ## Offline data
 
-`LocalD4hClient` reads lists from saved JSON files (D4H list responses with a `results` key) in a
-directory instead of calling the API, which is useful for analysis and tests. Writes still go to
-the API.
+`save_lists` downloads collections into a directory, one JSON file each, and `LocalD4hClient`
+then answers reads from those files instead of the API. Useful for analysis without hitting the
+API, and for tests.
 
 ```python
-from d4h import LocalD4hClient
+from d4h import D4hClient, LocalD4hClient, save_lists
 
-client = LocalD4hClient("...", team_id=123, base_url="https://api.team-manager.ca.d4h.com/v3/",
-                        data_dir="data")
-client.get_members()   # reads data/members.json
+settings = dict(team_id=123, base_url="https://api.team-manager.ca.d4h.com/v3/")
+
+save_lists(D4hClient("...", **settings), "data")                 # every collection
+save_lists(D4hClient("...", **settings), "data", ["members", "attendance"])
+
+client = LocalD4hClient("...", data_dir="data", **settings)
+client.equipment.list()      # data/equipment.json
+client.members.get(17)       # member 17 from data/members.json
+client.settings.get()        # data/settings.json
 ```
+
+- Collections the API key can't read (e.g. a module your team doesn't use) are skipped and
+  reported in the summary `save_lists` returns; a failed refresh keeps the previous file.
+- Filters are applied to saved attendance; other saved lists are returned unfiltered.
+- A read with no saved file raises `FileNotFoundError` instead of calling the API.
+- Writes (create, update, delete, upload, actions) still go to the API.
 
 ## Development
 

@@ -23,7 +23,7 @@ from urllib.parse import parse_qsl, urlsplit
 import requests
 
 import d4h.client
-from d4h import D4hClient, LocalD4hClient
+from d4h import D4hClient, LocalD4hClient, save_lists
 
 TEAM_ID = 4242
 BASE_URL = "https://api.example.test/v3/"
@@ -116,18 +116,18 @@ class D4hClientTestCase(unittest.TestCase):
 class TestConnection(D4hClientTestCase):
 
     def test_requests_go_to_the_configured_base_url_and_team(self):
-        self.client.get_members()
+        self.client.members.list()
         self.assertEqual(self.last_request().url.split('?')[0], "https://api.example.test/v3/team/4242/members")
 
     def test_a_different_team_and_region_are_used_when_configured(self):
         client = make_client(team_id=7, base_url="https://api.team-manager.us.d4h.com/v3/")
-        client.get_members()
+        client.members.list()
         self.assertEqual(self.last_request().url.split('?')[0],
                          "https://api.team-manager.us.d4h.com/v3/team/7/members")
 
     def test_base_url_without_trailing_slash_is_accepted(self):
         client = make_client(base_url="https://api.example.test/v3")
-        client.get_members()
+        client.members.list()
         self.assertEqual(self.last_request().url.split('?')[0], "https://api.example.test/v3/team/4242/members")
 
     def test_team_and_base_url_are_required(self):
@@ -142,289 +142,136 @@ class TestConnection(D4hClientTestCase):
             make_client(local=True)
 
     def test_api_key_is_sent_as_bearer_token(self):
-        self.client.get_members()
+        self.client.members.list()
         self.assertEqual(self.last_request().headers['Authorization'], 'Bearer test-key')
 
     def test_json_writes_declare_json_content_type(self):
         self.respond_with(payload={'id': 1})
-        self.client.create_attendance(1, 2, '2026-01-01T00:00:00Z', '2026-01-01T01:00:00Z')
+        self.client.attendance.create({'memberId': 1, 'activityId': 2, 'startsAt': '2026-01-01T00:00:00Z', 'endsAt': '2026-01-01T01:00:00Z'})
         self.assertEqual(self.last_request().headers['Content-Type'], 'application/json')
 
 
 class TestListEndpoints(D4hClientTestCase):
 
-    LIST_METHODS = {
-        'get_qualifications': 'member-qualifications',
-        'get_member_qualifications': 'member-qualification-awards',
-        'get_members': 'members',
-        'get_events': 'events',
-        'get_exercises': 'exercises',
-        'get_incidents': 'incidents',
-        'get_incident_involved_persons': 'incident-involved-persons',
-        'get_member_group_memberships': 'member-group-memberships',
-        'get_location_bookmarks': 'location-bookmarks',
-        'get_tags': 'tags',
+    LISTS = {
+        'member_qualifications': 'member-qualifications',
+        'member_qualification_awards': 'member-qualification-awards',
+        'members': 'members',
+        'events': 'events',
+        'exercises': 'exercises',
+        'incidents': 'incidents',
+        'incident_involved_persons': 'incident-involved-persons',
+        'member_group_memberships': 'member-group-memberships',
+        'location_bookmarks': 'location-bookmarks',
+        'tags': 'tags',
+        'duties': 'duties',
+        'attendance': 'attendance',
     }
 
-    def test_each_list_method_gets_its_endpoint_and_returns_results(self):
+    def test_each_list_gets_its_endpoint_and_returns_results(self):
         records = [{'id': 1}, {'id': 2}]
-        for method_name, path in self.LIST_METHODS.items():
-            with self.subTest(method=method_name):
+        for attribute, path in self.LISTS.items():
+            with self.subTest(collection=attribute):
                 self.sent.clear()
                 self.respond_with(payload=list_payload(records))
 
-                result = getattr(self.client, method_name)()
+                result = getattr(self.client, attribute).list()
 
-                self.assert_request('GET', path)
+                self.assert_request('GET', path, query={'size': str(DEFAULT_PAGE_SIZE)})
                 self.assertEqual(result, records)
 
     def test_list_requests_ask_for_the_configured_page_size(self):
-        self.client.get_members()
+        self.client.members.list()
         self.assert_request('GET', 'members', query={'size': '250'})
 
     def test_page_size_defaults_to_10000(self):
         client = D4hClient('test-key', team_id=TEAM_ID, base_url=BASE_URL)
-        client.get_members()
+        client.members.list()
         self.assert_request('GET', 'members', query={'size': '10000'})
 
-
-class TestDuties(D4hClientTestCase):
-
-    def test_get_duties_sends_date_and_member_filters(self):
-        self.client.get_duties(after='2026-01-01T00:00:00Z', before='2026-02-01T00:00:00Z', member_id=17)
-        self.assert_request('GET', 'duties', query={
-            'size': str(DEFAULT_PAGE_SIZE),
-            'after': '2026-01-01T00:00:00Z',
-            'before': '2026-02-01T00:00:00Z',
-            'memberId': '17',
-        })
-
-    def test_get_duties_without_filters_sends_only_page_size(self):
-        self.client.get_duties()
-        self.assert_request('GET', 'duties', query={'size': str(DEFAULT_PAGE_SIZE)})
-
-    def test_get_duties_filters_role_client_side(self):
-        self.respond_with(payload=list_payload([
-            {'id': 1, 'role': {'id': 501}},
-            {'id': 2, 'role': {'id': 99}},
-            {'id': 3},
-        ]))
-
-        result = self.client.get_duties(role_id=501)
-
-        # The API has no role filter, so nothing about the role goes over the wire.
-        self.assert_request('GET', 'duties', query={'size': str(DEFAULT_PAGE_SIZE)})
-        self.assertEqual([duty['id'] for duty in result], [1])
-
-    def test_create_duty(self):
-        self.respond_with(payload={'id': 5})
-
-        result = self.client.create_duty(17, 501, 'ON', '2026-01-01T00:00:00Z', '2026-01-08T00:00:00Z',
-                                         notes='week 1')
-
-        self.assert_request('POST', 'duties/add-duty-period', body={
-            'memberId': 17,
-            'roleId': 501,
-            'type': 'ON',
-            'startsAt': '2026-01-01T00:00:00Z',
-            'endsAt': '2026-01-08T00:00:00Z',
-            'notes': 'week 1',
-        })
-        self.assertEqual(result, {'id': 5})
-
-    def test_create_duty_defaults_to_empty_notes(self):
-        self.respond_with(payload={'id': 5})
-        self.client.create_duty(17, 501, 'OFF', '2026-01-01T00:00:00Z', '2026-01-08T00:00:00Z')
-        self.assertEqual(json.loads(self.last_request().body)['notes'], '')
-
-
-class TestAttendance(D4hClientTestCase):
-
-    def test_get_attendance_sends_every_filter(self):
-        self.client.get_attendance(
-            activity_resource_type='Exercise',
-            status='ATTENDING',
-            member_id=17,
-            activity_id=42,
-            starts_after='2026-01-01T00:00:00Z',
-            starts_before='2026-02-01T08:30:00Z',
-        )
+    def test_filters_are_sent_as_given(self):
+        # The API's own query names: snake_case on attendance, camelCase on duties.
+        self.client.attendance.list(activity_resource_type='Exercise', status='ATTENDING', member_id=17,
+                                    activity_id=42, starts_after='2026-01-01', starts_before='2026-02-01T08:30:00Z')
         self.assert_request('GET', 'attendance', query={
             'size': str(DEFAULT_PAGE_SIZE),
             'activity_resource_type': 'Exercise',
             'status': 'ATTENDING',
             'member_id': '17',
             'activity_id': '42',
-            'starts_after': '2026-01-01T00:00:00Z',
+            'starts_after': '2026-01-01',
             'starts_before': '2026-02-01T08:30:00Z',
         })
 
-    def test_get_attendance_sends_dates_exactly_as_given(self):
-        # Normalising date formats is the caller's job; the client does not reinterpret them.
-        self.client.get_attendance(starts_after='2026-01-01', starts_before='2026-02-01')
-        self.assert_request('GET', 'attendance', query={
-            'size': str(DEFAULT_PAGE_SIZE),
-            'starts_after': '2026-01-01',
-            'starts_before': '2026-02-01',
-        })
+        self.sent.clear()
+        self.client.duties.list(after='2026-01-01T00:00:00Z', memberId=17)
+        self.assert_request('GET', 'duties', query={
+            'size': str(DEFAULT_PAGE_SIZE), 'after': '2026-01-01T00:00:00Z', 'memberId': '17'})
 
-    def test_get_attendance_without_filters_sends_only_page_size(self):
-        self.client.get_attendance()
-        self.assert_request('GET', 'attendance', query={'size': str(DEFAULT_PAGE_SIZE)})
 
-    def test_get_attendance_returns_results(self):
-        records = [{'id': 30001, 'status': 'ATTENDING'}]
-        self.respond_with(payload=list_payload(records))
-        self.assertEqual(self.client.get_attendance(activity_id=42), records)
+class TestRecordCalls(D4hClientTestCase):
+    """The writes NSR relies on, made through resources: bodies are sent exactly as given."""
 
-    def test_create_attendance(self):
-        self.respond_with(payload={'id': 30001})
+    def test_create_sends_the_body_and_returns_the_parsed_response(self):
+        cases = [
+            ('attendance', 'attendance', {'memberId': 17, 'activityId': 42, 'startsAt': '2026-01-01T18:00:00Z',
+                                          'endsAt': '2026-01-01T21:00:00Z', 'status': 'ATTENDING'}),
+            ('exercises', 'exercises', {'referenceDescription': 'Rope Rescue Practice', 'fullTeam': False,
+                                        'startsAt': '2026-01-06T02:00:00Z', 'endsAt': '2026-01-06T05:00:00Z'}),
+            ('events', 'events', {'referenceDescription': 'Open House', 'trackingNumber': '26-1003',
+                                  'startsAt': '2026-01-06T02:00:00Z', 'endsAt': '2026-01-06T05:00:00Z'}),
+            ('member_qualification_awards', 'member-qualification-awards',
+             {'memberId': 17, 'qualificationId': 602, 'startsAt': '2026-01-01T00:00:00Z'}),
+        ]
+        for attribute, path, body in cases:
+            with self.subTest(collection=attribute):
+                self.sent.clear()
+                self.respond_with(payload={'id': 9})
 
-        result = self.client.create_attendance(17, 42, '2026-01-01T18:00:00Z', '2026-01-01T21:00:00Z')
+                result = getattr(self.client, attribute).create(body)
 
-        self.assert_request('POST', 'attendance', body={
-            'memberId': 17,
-            'activityId': 42,
-            'startsAt': '2026-01-01T18:00:00Z',
-            'endsAt': '2026-01-01T21:00:00Z',
-            'status': 'ATTENDING',
-        })
-        self.assertEqual(result, {'id': 30001})
+                request = self.assert_request('POST', path, body=body)
+                self.assertEqual(request.headers['Content-Type'], 'application/json')
+                self.assertEqual(result, {'id': 9})
 
-    def test_create_attendance_with_explicit_status(self):
-        self.respond_with(payload={'id': 30001})
-        self.client.create_attendance(17, 42, '2026-01-01T18:00:00Z', '2026-01-01T21:00:00Z', status='ABSENT')
-        self.assertEqual(json.loads(self.last_request().body)['status'], 'ABSENT')
+    def test_update_patches_the_record(self):
+        for attribute, path in (('exercises', 'exercises'), ('events', 'events')):
+            with self.subTest(collection=attribute):
+                self.sent.clear()
+                self.respond_with(payload={'id': 359312})
 
-    def test_delete_attendance(self):
+                result = getattr(self.client, attribute).update(359312, {'description': 'Corrected'})
+
+                self.assert_request('PATCH', f'{path}/359312', body={'description': 'Corrected'})
+                self.assertEqual(result, {'id': 359312})
+
+    def test_delete(self):
         self.respond_with(status=204)
 
-        result = self.client.delete_attendance(30001)
+        result = self.client.attendance.delete(30001)
 
         request = self.assert_request('DELETE', 'attendance/30001')
         self.assertIsNone(request.body)
         self.assertIs(result, True)
 
-
-class TestActivities(D4hClientTestCase):
-    """Exercises and events share a payload shape; each case runs against both."""
-
-    CREATORS = {'create_exercise': 'exercises', 'create_event': 'events'}
-    UPDATERS = {'update_exercise': 'exercises', 'update_event': 'events'}
-    TAGGERS = {
-        'add_tags_to_exercise': 'exercises',
-        'add_tags_to_event': 'events',
-        'add_tags_to_incident': 'incidents',
-    }
-
-    def test_create_with_required_fields_only(self):
-        for method_name, path in self.CREATORS.items():
-            with self.subTest(method=method_name):
+    def test_tagging_an_activity(self):
+        for attribute in ('exercises', 'events', 'incidents'):
+            with self.subTest(collection=attribute):
                 self.sent.clear()
                 self.respond_with(payload={'id': 359312})
 
-                result = getattr(self.client, method_name)(
-                    'Rope Rescue Practice', '2026-01-06T02:00:00Z', '2026-01-06T05:00:00Z')
+                getattr(self.client, attribute).action('tags', item_id=359312, data={'tagIds': [5841, 5970]})
 
-                # Only what the caller supplied is sent; D4H applies its own defaults
-                # for everything else (including fullTeam).
-                self.assert_request('POST', path, body={
-                    'referenceDescription': 'Rope Rescue Practice',
-                    'startsAt': '2026-01-06T02:00:00Z',
-                    'endsAt': '2026-01-06T05:00:00Z',
-                })
-                self.assertEqual(result, {'id': 359312})
+                self.assert_request('POST', f'{attribute}/359312/tags', body={'tagIds': [5841, 5970]})
 
-    def test_create_with_all_optional_fields(self):
-        for method_name, path in self.CREATORS.items():
-            with self.subTest(method=method_name):
-                self.sent.clear()
-                self.respond_with(payload={'id': 359312})
+    def test_adding_a_duty_period(self):
+        body = {'memberId': 17, 'roleId': 501, 'type': 'ON', 'startsAt': '2026-01-01T00:00:00Z',
+                'endsAt': '2026-01-08T00:00:00Z', 'notes': ''}
+        self.respond_with(payload={'id': 5})
 
-                getattr(self.client, method_name)(
-                    'Rope Rescue Practice', '2026-01-06T02:00:00Z', '2026-01-06T05:00:00Z',
-                    description='Annual recert', reference='REF-9', tracking_number='26-1003',
-                    plan='Stations A-C', location_bookmark_id=703, full_team=False)
+        self.client.duties.action('add-duty-period', data=body)
 
-                self.assert_request('POST', path, body={
-                    'referenceDescription': 'Rope Rescue Practice',
-                    'startsAt': '2026-01-06T02:00:00Z',
-                    'endsAt': '2026-01-06T05:00:00Z',
-                    'fullTeam': False,
-                    'description': 'Annual recert',
-                    'reference': 'REF-9',
-                    'trackingNumber': '26-1003',
-                    'plan': 'Stations A-C',
-                    'locationBookmarkId': 703,
-                })
-
-    def test_create_sends_full_team_true_when_asked(self):
-        for method_name, path in self.CREATORS.items():
-            with self.subTest(method=method_name):
-                self.sent.clear()
-                self.respond_with(payload={'id': 359312})
-
-                getattr(self.client, method_name)(
-                    'Rope Rescue Practice', '2026-01-06T02:00:00Z', '2026-01-06T05:00:00Z', full_team=True)
-
-                self.assertIs(json.loads(self.last_request().body)['fullTeam'], True)
-
-    def test_create_rejects_unknown_fields(self):
-        for method_name in self.CREATORS:
-            with self.subTest(method=method_name):
-                with self.assertRaises(TypeError):
-                    getattr(self.client, method_name)(
-                        'Rope Rescue Practice', '2026-01-06T02:00:00Z', '2026-01-06T05:00:00Z', colour='red')
-                self.assertEqual(self.sent, [])
-
-    def test_update_patches_the_activity_with_the_given_fields(self):
-        for method_name, path in self.UPDATERS.items():
-            with self.subTest(method=method_name):
-                self.sent.clear()
-                self.respond_with(payload={'id': 359312})
-
-                result = getattr(self.client, method_name)(359312, {'description': 'Corrected'})
-
-                self.assert_request('PATCH', f'{path}/359312', body={'description': 'Corrected'})
-                self.assertEqual(result, {'id': 359312})
-
-    def test_add_tags(self):
-        for method_name, path in self.TAGGERS.items():
-            with self.subTest(method=method_name):
-                self.sent.clear()
-                self.respond_with(payload={'id': 359312})
-
-                getattr(self.client, method_name)(359312, [5841, 5970])
-
-                self.assert_request('POST', f'{path}/359312/tags', body={'tagIds': [5841, 5970]})
-
-
-class TestQualifications(D4hClientTestCase):
-
-    def test_add_member_qualification_with_expiry(self):
-        self.respond_with(payload={'id': 900})
-
-        result = self.client.add_member_qualification(17, 602, '2026-01-01T00:00:00Z',
-                                                      expires='2029-01-01T00:00:00Z')
-
-        self.assert_request('POST', 'member-qualification-awards', body={
-            'memberId': 17,
-            'qualificationId': 602,
-            'startsAt': '2026-01-01T00:00:00Z',
-            'endsAt': '2029-01-01T00:00:00Z',
-        })
-        self.assertEqual(result, {'id': 900})
-
-    def test_add_member_qualification_without_expiry_omits_ends_at(self):
-        self.respond_with(payload={'id': 900})
-
-        self.client.add_member_qualification(17, 602, '2026-01-01T00:00:00Z')
-
-        self.assert_request('POST', 'member-qualification-awards', body={
-            'memberId': 17,
-            'qualificationId': 602,
-            'startsAt': '2026-01-01T00:00:00Z',
-        })
+        self.assert_request('POST', 'duties/add-duty-period', body=body)
 
 
 class TestDocumentUpload(D4hClientTestCase):
@@ -453,28 +300,22 @@ class TestDocumentUpload(D4hClientTestCase):
             fields[name] = value.rstrip(b'\r\n')
         return fields
 
-    def test_upload_sends_multipart_form_with_file_and_required_fields(self):
-        result = self.client.upload_document(self.file_path, 'MemberQualificationAward', 900)
+    def test_upload_sends_multipart_form_with_file_and_fields(self):
+        result = self.client.documents.upload(self.file_path, {
+            'targetResourceType': 'MemberQualificationAward', 'targetResourceId': 900,
+            'restricted': 'UNRESTRICTED', 'title': 'First Aid'})
 
         request = self.assert_request('POST', 'documents')
         self.assertEqual(self.multipart_fields(request), {
             'targetResourceType': b'MemberQualificationAward',
             'targetResourceId': b'900',
             'restricted': b'UNRESTRICTED',
+            'title': b'First Aid',
             'file': b'%PDF-fake certificate bytes',
         })
+        self.assertIn(f'filename="{os.path.basename(self.file_path)}"'.encode(), request.body)
         self.assertEqual(request.headers['Authorization'], 'Bearer test-key')
         self.assertEqual(result, {'id': 77})
-
-    def test_upload_includes_optional_fields_when_given(self):
-        self.client.upload_document(self.file_path, 'MemberQualificationAward', 900, title='First Aid',
-                                    description='Scanned card', container_id=12, restricted='RESTRICTED')
-
-        fields = self.multipart_fields(self.last_request())
-        self.assertEqual(fields['title'], b'First Aid')
-        self.assertEqual(fields['description'], b'Scanned card')
-        self.assertEqual(fields['containerId'], b'12')
-        self.assertEqual(fields['restricted'], b'RESTRICTED')
 
 
 class TestResponseHandling(D4hClientTestCase):
@@ -483,7 +324,7 @@ class TestResponseHandling(D4hClientTestCase):
         self.respond_with(status=422, body=b'{"error":"startsAt is required"}')
 
         with self.assertRaises(requests.HTTPError) as caught:
-            self.client.create_attendance(17, 42, None, None)
+            self.client.attendance.create({'memberId': 17, 'activityId': 42})
 
         message = str(caught.exception)
         self.assertIn('POST', message)
@@ -495,24 +336,24 @@ class TestResponseHandling(D4hClientTestCase):
     def test_error_status_on_a_read_also_raises(self):
         self.respond_with(status=401, body=b'Unauthorized')
         with self.assertRaises(requests.HTTPError):
-            self.client.get_members()
+            self.client.members.list()
 
     def test_server_error_raises(self):
         self.respond_with(status=503, body=b'Service Unavailable')
         with self.assertRaises(requests.HTTPError):
-            self.client.get_tags()
+            self.client.tags.list()
 
     def test_no_content_response_returns_true(self):
         self.respond_with(status=204)
-        self.assertIs(self.client.delete_attendance(1), True)
+        self.assertIs(self.client.attendance.delete(1), True)
 
     def test_success_with_empty_body_returns_true(self):
         self.respond_with(status=200, body=b'')
-        self.assertIs(self.client.add_tags_to_exercise(1, [2]), True)
+        self.assertIs(self.client.exercises.action('tags', item_id=1, data={'tagIds': [2]}), True)
 
     def test_json_body_is_returned_parsed(self):
         self.respond_with(status=201, payload={'id': 9, 'resourceType': 'Exercise'})
-        result = self.client.create_exercise('Ref', '2026-01-06T02:00:00Z', '2026-01-06T05:00:00Z')
+        result = self.client.exercises.create({'referenceDescription': 'Ref'})
         self.assertEqual(result, {'id': 9, 'resourceType': 'Exercise'})
 
 
@@ -530,7 +371,7 @@ class TestPagination(D4hClientTestCase):
             make_response(payload=list_payload([{'id': 5}], total=5, page=2)),
         )
 
-        result = self.client.get_members()
+        result = self.client.members.list()
 
         self.assertEqual(ids(result), [1, 2, 3, 4, 5])
         # The first request is unchanged from the single-request client; later ones add `page`.
@@ -539,12 +380,12 @@ class TestPagination(D4hClientTestCase):
 
     def test_a_list_that_fits_in_one_page_takes_one_request(self):
         self.queue(make_response(payload=list_payload([{'id': 1}, {'id': 2}], total=2)))
-        self.assertEqual(ids(self.client.get_members()), [1, 2])
+        self.assertEqual(ids(self.client.members.list()), [1, 2])
         self.assertEqual(len(self.sent), 1)
 
     def test_an_empty_list_takes_one_request(self):
         self.queue(make_response(payload=list_payload([])))
-        self.assertEqual(self.client.get_members(), [])
+        self.assertEqual(self.client.members.list(), [])
         self.assertEqual(len(self.sent), 1)
 
     def test_stops_at_an_empty_page_even_if_total_size_promised_more(self):
@@ -553,7 +394,7 @@ class TestPagination(D4hClientTestCase):
             make_response(payload=list_payload([{'id': 1}, {'id': 2}], total=5)),
             make_response(payload=list_payload([], total=0, page=1)),
         )
-        self.assertEqual(ids(self.client.get_members()), [1, 2])
+        self.assertEqual(ids(self.client.members.list()), [1, 2])
         self.assertEqual(len(self.sent), 2)
 
     def test_without_total_size_stops_at_the_first_short_page(self):
@@ -561,7 +402,7 @@ class TestPagination(D4hClientTestCase):
             make_response(payload={'results': [{'id': 1}, {'id': 2}]}),
             make_response(payload={'results': [{'id': 3}]}),
         )
-        self.assertEqual(ids(self.client.get_members()), [1, 2, 3])
+        self.assertEqual(ids(self.client.members.list()), [1, 2, 3])
         self.assertEqual(len(self.sent), 2)
 
     def test_negative_total_size_means_unknown_so_paging_continues(self):
@@ -571,7 +412,7 @@ class TestPagination(D4hClientTestCase):
             make_response(payload=list_payload([{'id': 3}, {'id': 4}], total=-1, page=1)),
             make_response(payload=list_payload([], total=-1, page=2)),
         )
-        self.assertEqual(ids(self.client.get_members()), [1, 2, 3, 4])
+        self.assertEqual(ids(self.client.members.list()), [1, 2, 3, 4])
         self.assertEqual(len(self.sent), 3)
 
     def test_attendance_filters_are_sent_with_every_page(self):
@@ -580,7 +421,7 @@ class TestPagination(D4hClientTestCase):
             make_response(payload=list_payload([{'id': 3}], total=3, page=1)),
         )
 
-        result = self.client.get_attendance(status='ATTENDING', member_id=17)
+        result = self.client.attendance.list(status='ATTENDING', member_id=17)
 
         self.assertEqual(ids(result), [1, 2, 3])
         self.assertEqual(self.queries(), [
@@ -588,33 +429,25 @@ class TestPagination(D4hClientTestCase):
             {'size': '2', 'status': 'ATTENDING', 'member_id': '17', 'page': '1'},
         ])
 
-    def test_duties_role_filter_applies_across_pages(self):
-        self.queue(
-            make_response(payload=list_payload([{'id': 1, 'role': {'id': 501}}, {'id': 2, 'role': {'id': 99}}],
-                                               total=3)),
-            make_response(payload=list_payload([{'id': 3, 'role': {'id': 501}}], total=3, page=1)),
-        )
-        self.assertEqual(ids(self.client.get_duties(role_id=501)), [1, 3])
-
     def test_an_error_on_a_later_page_raises_rather_than_returning_a_partial_list(self):
         self.queue(
             make_response(payload=list_payload([{'id': 1}, {'id': 2}], total=5)),
             make_response(status=500, body=b'boom'),
         )
         with self.assertRaises(requests.HTTPError):
-            self.client.get_members()
+            self.client.members.list()
 
 
 class TestTimeoutsAndRetries(D4hClientTestCase):
 
     def test_every_request_has_a_timeout(self):
-        self.client.get_members()
+        self.client.members.list()
         self.respond_with(payload={'id': 1})
-        self.client.create_attendance(1, 2, '2026-01-01T00:00:00Z', '2026-01-01T01:00:00Z')
+        self.client.attendance.create({'memberId': 1, 'activityId': 2, 'startsAt': '2026-01-01T00:00:00Z', 'endsAt': '2026-01-01T01:00:00Z'})
         self.assertEqual([kwargs['timeout'] for kwargs in self.send_kwargs], [60, 60])
 
     def test_timeout_is_configurable(self):
-        make_client(timeout=5).get_members()
+        make_client(timeout=5).members.list()
         self.assertEqual(self.send_kwargs[0]['timeout'], 5)
 
     def test_get_is_retried_after_a_gateway_error(self):
@@ -625,20 +458,20 @@ class TestTimeoutsAndRetries(D4hClientTestCase):
                 self.queue(make_response(status=status, body=b'unavailable'),
                            make_response(payload=list_payload([{'id': 1}])))
 
-                self.assertEqual(ids(self.client.get_members()), [1])
+                self.assertEqual(ids(self.client.members.list()), [1])
                 self.assertEqual(len(self.sent), 2)
                 self.assertEqual(self.sleeps, [1.0])
 
     def test_retry_wait_doubles_each_attempt(self):
         self.queue(*[make_response(status=503) for _ in range(3)], make_response(payload=list_payload([])))
-        self.client.get_members()
+        self.client.members.list()
         self.assertEqual(self.sleeps, [1.0, 2.0, 4.0])
 
     def test_gives_up_after_max_retries_and_raises(self):
         self.respond_with(status=503, body=b'Service Unavailable')
 
         with self.assertRaises(requests.HTTPError) as caught:
-            self.client.get_members()
+            self.client.members.list()
 
         self.assertEqual(caught.exception.response.status_code, 503)
         self.assertEqual(len(self.sent), 4)  # the original attempt plus three retries
@@ -647,7 +480,7 @@ class TestTimeoutsAndRetries(D4hClientTestCase):
     def test_retries_can_be_disabled(self):
         self.respond_with(status=503)
         with self.assertRaises(requests.HTTPError):
-            make_client(max_retries=0).get_members()
+            make_client(max_retries=0).members.list()
         self.assertEqual(len(self.sent), 1)
         self.assertEqual(self.sleeps, [])
 
@@ -655,9 +488,9 @@ class TestTimeoutsAndRetries(D4hClientTestCase):
         # The write may have been applied before the gateway failed; resending could duplicate it.
         self.respond_with(status=503)
         calls = [
-            lambda: self.client.create_attendance(1, 2, '2026-01-01T00:00:00Z', '2026-01-01T01:00:00Z'),
-            lambda: self.client.update_event(9, {'description': 'x'}),
-            lambda: self.client.delete_attendance(9),
+            lambda: self.client.attendance.create({'memberId': 1, 'activityId': 2, 'startsAt': '2026-01-01T00:00:00Z', 'endsAt': '2026-01-01T01:00:00Z'}),
+            lambda: self.client.events.update(9, {'description': 'x'}),
+            lambda: self.client.attendance.delete(9),
         ]
         for call in calls:
             self.sent.clear()
@@ -672,14 +505,14 @@ class TestTimeoutsAndRetries(D4hClientTestCase):
                 self.sent.clear()
                 self.respond_with(status=status)
                 with self.assertRaises(requests.HTTPError):
-                    self.client.get_members()
+                    self.client.members.list()
                 self.assertEqual(len(self.sent), 1)
 
     def test_rate_limited_requests_are_retried_for_any_method(self):
         # 429 means D4H rejected the request before acting on it, so a write is safe to resend.
         self.queue(make_response(status=429, headers={'Retry-After': '7'}), make_response(payload={'id': 30001}))
 
-        result = self.client.create_attendance(17, 42, '2026-01-01T18:00:00Z', '2026-01-01T21:00:00Z')
+        result = self.client.attendance.create({'memberId': 17, 'activityId': 42, 'startsAt': '2026-01-01T18:00:00Z', 'endsAt': '2026-01-01T21:00:00Z'})
 
         self.assertEqual(result, {'id': 30001})
         self.assertEqual(len(self.sent), 2)
@@ -690,7 +523,7 @@ class TestTimeoutsAndRetries(D4hClientTestCase):
         self.queue(make_response(status=429, headers={'Retry-After': '600'}),
                    make_response(status=429, headers={'Retry-After': 'Wed, 11 Nov 2026 20:00:00 GMT'}),
                    make_response(payload=list_payload([])))
-        self.client.get_members()
+        self.client.members.list()
         self.assertEqual(self.sleeps, [60, 2.0])
 
     def test_get_is_retried_after_a_dropped_connection_or_timeout(self):
@@ -698,19 +531,19 @@ class TestTimeoutsAndRetries(D4hClientTestCase):
             with self.subTest(error=type(error).__name__):
                 self.sent.clear()
                 self.queue(error, make_response(payload=list_payload([{'id': 1}])))
-                self.assertEqual(ids(self.client.get_members()), [1])
+                self.assertEqual(ids(self.client.members.list()), [1])
                 self.assertEqual(len(self.sent), 2)
 
     def test_connection_errors_propagate_once_retries_run_out(self):
         self.queue(*[requests.ConnectionError('reset') for _ in range(4)])
         with self.assertRaises(requests.ConnectionError):
-            self.client.get_members()
+            self.client.members.list()
         self.assertEqual(len(self.sent), 4)
 
     def test_writes_are_not_retried_after_a_dropped_connection(self):
         self.queue(requests.ConnectionError('reset'))
         with self.assertRaises(requests.ConnectionError):
-            self.client.create_attendance(1, 2, '2026-01-01T00:00:00Z', '2026-01-01T01:00:00Z')
+            self.client.attendance.create({'memberId': 1, 'activityId': 2, 'startsAt': '2026-01-01T00:00:00Z', 'endsAt': '2026-01-01T01:00:00Z'})
         self.assertEqual(len(self.sent), 1)
 
     def test_a_retried_upload_resends_the_whole_file(self):
@@ -720,7 +553,7 @@ class TestTimeoutsAndRetries(D4hClientTestCase):
         self.addCleanup(os.remove, handle.name)
         self.queue(make_response(status=429), make_response(payload={'id': 77}))
 
-        self.client.upload_document(handle.name, 'MemberQualificationAward', 900)
+        self.client.documents.upload(handle.name, {'targetResourceType': 'MemberQualificationAward', 'targetResourceId': 900})
 
         self.assertEqual(len(self.sent), 2)
         self.assertIn(b'%PDF-fake certificate bytes', self.sent[1].body)
@@ -841,40 +674,41 @@ class TestLocalClient(unittest.TestCase):
         self.assertIsInstance(self.client, D4hClient)
 
     def test_reads_results_from_the_data_directory(self):
-        self.assertEqual(self.client.get_members(), [{'id': 1, 'name': 'Alex Example'}])
+        self.assertEqual(self.client.members.list(), [{'id': 1, 'name': 'Alex Example'}])
         self.assertEqual(self.sent, [])
 
-    def test_each_list_method_reads_its_file(self):
+    def test_each_collection_reads_its_file(self):
         files = {
-            'get_qualifications': 'qualifications',
-            'get_member_qualifications': 'member_qualifications',
-            'get_members': 'members',
-            'get_events': 'events',
-            'get_exercises': 'exercises',
-            'get_incidents': 'incidents',
-            'get_incident_involved_persons': 'incident_involved_persons',
-            'get_member_group_memberships': 'member_groups',
-            'get_location_bookmarks': 'location_bookmarks',
-            'get_tags': 'tags',
-            'get_duties': 'duties',
-            'get_attendance': 'attendance',
+            'member_qualifications': 'qualifications',
+            'member_qualification_awards': 'member_qualifications',
+            'members': 'members',
+            'events': 'events',
+            'exercises': 'exercises',
+            'incidents': 'incidents',
+            'incident_involved_persons': 'incident_involved_persons',
+            'member_group_memberships': 'member_groups',
+            'location_bookmarks': 'location_bookmarks',
+            'tags': 'tags',
+            'duties': 'duties',
+            'attendance': 'attendance',
+            'equipment_brands': 'equipment_brands',
         }
-        for method_name, file_name in files.items():
-            with self.subTest(method=method_name):
+        for attribute, file_name in files.items():
+            with self.subTest(collection=attribute):
                 self.write(file_name, [{'id': file_name}])
-                self.assertEqual(getattr(self.client, method_name)(), [{'id': file_name}])
+                self.assertEqual(getattr(self.client, attribute).list(), [{'id': file_name}])
         self.assertEqual(self.sent, [])
+
+    def test_a_file_saved_with_the_endpoints_own_name_is_found(self):
+        self.write('custom-fields', [{'id': 8}])
+        self.assertEqual(self.client.custom_fields.list(), [{'id': 8}])
 
     def test_generic_list_all_reads_a_file_named_after_the_endpoint(self):
         self.write('custom_fields', [{'id': 8}])
         self.assertEqual(self.client.list_all('custom-fields'), [{'id': 8}])
         self.assertEqual(self.sent, [])
 
-    def test_get_duties_filters_role(self):
-        self.assertEqual(ids(self.client.get_duties()), [1, 2, 3])
-        self.assertEqual(ids(self.client.get_duties(role_id=501)), [1])
-
-    def test_get_attendance_applies_each_filter(self):
+    def test_attendance_filters_are_applied_to_saved_data(self):
         cases = [
             ({}, [1, 2, 3]),
             ({'activity_resource_type': 'Exercise'}, [1, 2]),
@@ -887,17 +721,116 @@ class TestLocalClient(unittest.TestCase):
         ]
         for filters, expected in cases:
             with self.subTest(filters=filters):
-                self.assertEqual(ids(self.client.get_attendance(**filters)), expected)
+                self.assertEqual(ids(self.client.attendance.list(**filters)), expected)
         self.assertEqual(self.sent, [])
+
+    def test_other_lists_ignore_filters(self):
+        self.assertEqual(ids(self.client.duties.list(memberId=99)), [1, 2, 3])
 
     def test_writes_still_go_to_the_api(self):
         # Only reads are local. Callers that must not write use a dry run in the layer above.
-        result = self.client.create_attendance(17, 42, '2026-01-01T18:00:00Z', '2026-01-01T21:00:00Z')
+        result = self.client.attendance.create({'memberId': 17, 'activityId': 42, 'startsAt': '2026-01-01T18:00:00Z', 'endsAt': '2026-01-01T21:00:00Z'})
 
         self.assertEqual(result, {'id': 30001})
         self.assertEqual(len(self.sent), 1)
         self.assertEqual(self.sent[0].method, 'POST')
         self.assertEqual(self.sent[0].url, f"{BASE_URL}team/{TEAM_ID}/attendance")
+
+
+class TestLocalReads(unittest.TestCase):
+    """Reads beyond lists: single records and single-object endpoints come from saved files too."""
+
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.data_dir = directory.name
+        with open(os.path.join(self.data_dir, 'members.json'), 'w') as file:
+            json.dump({'results': [{'id': 17, 'name': 'Alex Example'}, {'id': 18, 'name': 'Sam Example'}]}, file)
+        with open(os.path.join(self.data_dir, 'settings.json'), 'w') as file:
+            json.dump({'timezone': 'America/Vancouver'}, file)
+        self.client = LocalD4hClient('test-key', team_id=TEAM_ID, base_url=BASE_URL, data_dir=self.data_dir)
+        patcher = patch.object(requests.Session, 'send', autospec=True,
+                               side_effect=AssertionError("local reads must not make HTTP requests"))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_get_finds_the_record_in_the_saved_list(self):
+        self.assertEqual(self.client.members.get(18), {'id': 18, 'name': 'Sam Example'})
+        self.assertEqual(self.client.members.get('17')['name'], 'Alex Example')
+
+    def test_get_of_a_missing_record_raises_lookup_error(self):
+        with self.assertRaises(LookupError):
+            self.client.members.get(99)
+
+    def test_single_object_endpoint_reads_its_file(self):
+        self.assertEqual(self.client.settings.get(), {'timezone': 'America/Vancouver'})
+
+    def test_missing_data_raises_instead_of_calling_the_api(self):
+        with self.assertRaises(FileNotFoundError):
+            self.client.equipment.list()
+        with self.assertRaises(FileNotFoundError):
+            self.client.documents.list_related(9, 'revisions')
+
+
+class TestSaveLists(D4hClientTestCase):
+
+    def setUp(self):
+        super().setUp()
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.data_dir = os.path.join(directory.name, 'data')
+
+    def test_saves_each_collection_in_the_shape_the_local_client_reads(self):
+        self.queue(make_response(payload=list_payload([{'id': 17}])),
+                   make_response(payload=list_payload([{'id': 1, 'status': 'ATTENDING'}])),
+                   make_response(payload=list_payload([{'id': 4783}])),
+                   make_response(payload={'timezone': 'America/Vancouver'}))
+
+        summary = save_lists(self.client, self.data_dir,
+                             ['members', 'attendance', 'member_qualifications', 'settings'])
+
+        self.assertEqual(summary, {'members': 1, 'attendance': 1, 'member_qualifications': 1, 'settings': 1})
+        # member-qualifications keeps its historical file name.
+        self.assertEqual(sorted(os.listdir(self.data_dir)),
+                         ['attendance.json', 'members.json', 'qualifications.json', 'settings.json'])
+        local = LocalD4hClient('test-key', team_id=TEAM_ID, base_url=BASE_URL, data_dir=self.data_dir)
+        self.assertEqual(local.members.get(17), {'id': 17})
+        self.assertEqual(local.attendance.list(status='ATTENDING'), [{'id': 1, 'status': 'ATTENDING'}])
+        self.assertEqual(local.member_qualifications.list(), [{'id': 4783}])
+        self.assertEqual(local.settings.get(), {'timezone': 'America/Vancouver'})
+
+    def test_a_collection_that_fails_is_skipped_and_reported(self):
+        self.queue(make_response(status=403, body=b'module disabled'),
+                   make_response(payload=list_payload([{'id': 17}])))
+        logging.getLogger('d4h').setLevel(logging.CRITICAL)
+
+        summary = save_lists(self.client, self.data_dir, ['animals', 'members'])
+
+        self.assertEqual(summary, {'animals': 'skipped (403)', 'members': 1})
+        self.assertEqual(os.listdir(self.data_dir), ['members.json'])
+
+    def test_a_failed_refresh_keeps_the_previous_file(self):
+        os.makedirs(self.data_dir)
+        with open(os.path.join(self.data_dir, 'members.json'), 'w') as file:
+            json.dump({'results': [{'id': 'old'}]}, file)
+        self.queue(make_response(status=403))
+        logging.getLogger('d4h').setLevel(logging.CRITICAL)
+
+        save_lists(self.client, self.data_dir, ['members'])
+
+        with open(os.path.join(self.data_dir, 'members.json')) as file:
+            self.assertEqual(json.load(file), {'results': [{'id': 'old'}]})
+
+    def test_default_saves_every_collection_except_ones_needing_arguments(self):
+        summary = save_lists(self.client, self.data_dir)
+        self.assertNotIn('search', summary)
+        self.assertNotIn('modules', summary)
+        self.assertIn('equipment', summary)
+        self.assertIn('settings', summary)
+
+    def test_unknown_collection_is_an_error(self):
+        with self.assertRaises(ValueError):
+            save_lists(self.client, self.data_dir, ['equipmnet'])
 
 
 if __name__ == '__main__':
