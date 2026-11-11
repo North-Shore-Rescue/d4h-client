@@ -1,0 +1,1106 @@
+{
+ "source": "https://api.team-manager.us.d4h.com/v3/docs/swagger.json",
+ "api_version": "7.6.1",
+ "operations": [
+  {
+   "method": "GET",
+   "path": "/v3/healthcheck"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/organisation/{organisationId}/settings"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/public/mobile-app-versions"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/animal-group-memberships"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/team/{teamId}/animal-group-memberships/{animalGroupMembershipId}"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/attendance"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/team/{teamId}/attendance/{attendanceId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/team/{teamId}/attendance/{attendanceId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/team/{teamId}/contacts"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/duties/add-duty-period"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/team/{teamId}/duties/{dutyId}"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/duties/{dutyId}/update-duty-period"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/equipment-locations"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/team/{teamId}/equipment-locations/{equipmentLocationId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/team/{teamId}/equipment-locations/{equipmentLocationId}"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/events/reference/check"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/events/reference/increment"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/events/reference/peek"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/events/{activityId}/approval"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/events/{activityId}/publish"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/events/{activityId}/tags"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/exercises/reference/check"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/exercises/reference/increment"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/exercises/reference/peek"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/exercises/{activityId}/approval"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/exercises/{activityId}/publish"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/exercises/{activityId}/tags"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/handler-group-memberships"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/team/{teamId}/handler-group-memberships/{handlerGroupMembershipId}"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/health-safety-reports"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/team/{teamId}/health-safety-reports/{resourceId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/team/{teamId}/health-safety-reports/{resourceId}"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/health-safety-reports/{resourceId}/approval"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/incident-involved-injuries"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/team/{teamId}/incident-involved-injuries/{involvedInjuryId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/team/{teamId}/incident-involved-injuries/{involvedInjuryId}"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/incident-involved-persons"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/team/{teamId}/incident-involved-persons/{involvedPersonId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/team/{teamId}/incident-involved-persons/{involvedPersonId}"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/incidents/reference/check"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/incidents/reference/increment"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/incidents/reference/peek"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/incidents/{activityId}/approval"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/incidents/{activityId}/publish"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/incidents/{activityId}/tags"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/member-group-memberships"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/team/{teamId}/member-group-memberships/{memberGroupMembershipId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/team/{teamId}/settings"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/task-assignments"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/team/{teamId}/task-assignments/{assignmentId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/team/{teamId}/task-assignments/{assignmentId}"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/team/{teamId}/tasks"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/team/{teamId}/tasks/{taskId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/team/{teamId}/tasks/{taskId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/whoami"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/animal-attendance"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/animal-attendance"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/animal-attendance/{animalAttendanceId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/animal-attendance/{animalAttendanceId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/animal-attendance/{animalAttendanceId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/animal-group-memberships"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/animal-group-memberships/{animalGroupMembershipId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/animal-groups"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/animal-groups"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/animal-groups/{groupId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/animal-groups/{groupId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/animal-groups/{groupId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/animal-qualifications"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/animal-qualifications"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/animal-qualifications/{qualificationId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/animal-qualifications/{qualificationId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/animals"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/animals/{animalId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/attendance"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/attendance/{attendanceId}"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/custom-field-options"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/custom-field-options/{customFieldOptionId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/custom-fields"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/custom-fields"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/custom-fields/{customFieldId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/custom-fields/{customFieldId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/custom-fields/{customFieldId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/customer-identifiers"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/documents"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/documents"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/documents/metadata"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/documents/{documentId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/documents/{documentId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/documents/{documentId}"
+  },
+  {
+   "method": "PUT",
+   "path": "/v3/{context}/{contextId}/documents/{documentId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/documents/{documentId}/download"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/documents/{documentId}/revisions"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/documents/{documentId}/revisions/{revisionId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/documents/{documentId}/revisions/{revisionId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/duties"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/duties/on-call-now"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/duties/{dutyId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-brands"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-brands"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-brands/merge"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-brands/{brandId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-brands/{brandId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-brands/{brandId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-brands/{brandId}/image"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-categories"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-categories"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-categories/merge"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-categories/{categoryId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-categories/{categoryId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-categories/{categoryId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-funds"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-funds"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-funds/{fundId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-funds/{fundId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-funds/{fundId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-results"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-results/{inspectionResultId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-results/{inspectionResultId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-results/{inspectionResultId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-results/{inspectionResultId}/equipment-inspection-step-results"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-step-results"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-step-results"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-step-results/{inspectionResultStepId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-step-results/{inspectionResultStepId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-step-results/{inspectionResultStepId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-steps"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-steps"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-steps/{inspectionStepId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-steps/{inspectionStepId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-inspection-steps/{inspectionStepId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-inspections"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-inspections/{inspectionId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-kinds"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-kinds"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-kinds/merge"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-kinds/{kindId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-kinds/{kindId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-kinds/{kindId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-locations"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-locations/{equipmentLocationId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-models"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-models"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-models/merge"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-models/{modelId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-models/{modelId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-models/{modelId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-models/{modelId}/image"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-retired-reasons"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-retired-reasons"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-retired-reasons/{reasonId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-retired-reasons/{reasonId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-retired-reasons/{reasonId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-supplier-refs"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-supplier-refs"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-supplier-refs/merge"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-supplier-refs/{refId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-supplier-refs/{refId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-supplier-refs/{refId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-suppliers"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-suppliers"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-suppliers/merge"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-suppliers/{supplierId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-suppliers/{supplierId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-suppliers/{supplierId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-suppliers/{supplierId}/image"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-usages"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/equipment-usages"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment-usages/{usageId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment-usages/{usageId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment-usages/{usageId}"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/equipment/{itemId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment/{itemId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/equipment/{itemId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/equipment/{itemId}/image"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/events"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/events"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/events/{activityId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/events/{activityId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/exercises"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/exercises"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/exercises/{activityId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/exercises/{activityId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/handler-group-memberships"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/handler-group-memberships/{handlerGroupMembershipId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/handler-groups"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/handler-groups"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/handler-groups/{groupId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/handler-groups/{groupId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/handler-groups/{groupId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/handler-qualifications"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/handler-qualifications"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/handler-qualifications/{qualificationId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/handler-qualifications/{qualificationId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/handlers"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/handlers"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/handlers/{handlerId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/handlers/{handlerId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/handlers/{handlerId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/health-safety-categories"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/health-safety-categories"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/health-safety-categories/{categoryId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/health-safety-categories/{categoryId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/health-safety-categories/{categoryId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/health-safety-reports"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/health-safety-reports/{reportId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/health-safety-severities"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/health-safety-severities"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/health-safety-severities/{severityId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/health-safety-severities/{severityId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/health-safety-severities/{severityId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/incident-involved-injuries"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/incident-involved-injuries/{involvedInjuryId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/incident-involved-metadata"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/incident-involved-persons"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/incident-involved-persons/{involvedPersonId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/incidents"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/incidents"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/incidents/{activityId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/incidents/{activityId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/location-bookmarks"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/location-bookmarks/{bookmarkId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/member-custom-statuses"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/member-group-memberships"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/member-group-memberships/{memberGroupMembershipId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/member-groups"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/member-groups"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/member-groups/{groupId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/member-groups/{groupId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/member-groups/{groupId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/member-qualification-awards"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/member-qualification-awards"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/member-qualifications"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/member-qualifications"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/member-qualifications/{qualificationId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/member-qualifications/{qualificationId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/member-retired-reasons"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/members"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/members/{member}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/members/{member}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/members/{member}/image"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/members/{member}/retire"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/modules"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/organisations/{organisationId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/repairs"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/repairs"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/repairs/{repairId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/repairs/{repairId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/repairs/{repairId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/resource-bundles"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/resource-bundles"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/resource-bundles/{resourceBundleId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/roles"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/roles/{roleId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/search"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/tags"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/tags"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/tags/{tagId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/tags/{tagId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/tags/{tagId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/task-assignments"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/task-assignments/{assignmentId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/tasks"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/tasks/{taskId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/teams"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/teams/{teamId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/teams/{teamId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/teams/{teamId}/image"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/whiteboard"
+  },
+  {
+   "method": "POST",
+   "path": "/v3/{context}/{contextId}/whiteboard"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v3/{context}/{contextId}/whiteboard/{noteId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/whiteboard/{noteId}"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v3/{context}/{contextId}/whiteboard/{noteId}"
+  },
+  {
+   "method": "GET",
+   "path": "/v3/{context}/{contextId}/whoami"
+  }
+ ]
+}
